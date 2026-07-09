@@ -1,0 +1,5 @@
+{
+  "p01_latex": "A LaTeX thesis compiled with xelatex emits `LaTeX Warning: Reference ‘sec:foo’ on page 87 undefined`, and the resulting PDF has 30 fewer pages than the pdflatex build. What are the likely causes and how would you diagnose it?",
+  "p02_matlab": "In a Simulink simulation of a dual-active-bridge converter, the output capacitor voltages of the two modules split by a factor of roughly two. I assumed it was flux imbalance. How would you systematically locate the real cause?",
+  "p08_tradeoff": "For plotting closed-form analytical curves in an academic paper, should I use Python matplotlib or MATLAB? Give me a decision rule."
+}

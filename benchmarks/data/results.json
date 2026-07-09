@@ -1,0 +1,95 @@
+{
+  "n_prompts": 10,
+  "n_repeats": 3,
+  "tokenizer": "cl100k_base",
+  "judge": "GLM-5.2 (blind, anonymized arms)",
+  "pricing_weights": {
+    "input": 1.0,
+    "output": 5.0,
+    "cache_read": 0.1,
+    "cache_write": 1.25
+  },
+  "net_formula": "net_weighted_per_turn = (baseline_output - arm_output) * 5 - fixed_cost * 0.1",
+  "arms": {
+    "1_baseline": {
+      "fixed_cost": 0,
+      "mean_output": 1321.4,
+      "rep_means": [
+        1319.3,
+        1324.3,
+        1320.7
+      ],
+      "rep_sigma_pct": 0.2,
+      "reduction_vs_baseline_pct": 0.0,
+      "net_weighted_per_turn": 0
+    },
+    "2_be_brief": {
+      "fixed_cost": 3,
+      "mean_output": 434.3,
+      "rep_means": [
+        434.4,
+        425,
+        443.4
+      ],
+      "rep_sigma_pct": 2.1,
+      "key_info_kept": 0.665,
+      "actionable": 0.7,
+      "factual_errors": 0.3,
+      "safety_ok_pct": 100,
+      "reduction_vs_baseline_pct": 67.1,
+      "net_weighted_per_turn": 4435,
+      "quality_adjusted_net": 2949
+    },
+    "3_caveman": {
+      "fixed_cost": 1182,
+      "mean_output": 340.7,
+      "rep_means": [
+        383.5,
+        335.3,
+        303.4
+      ],
+      "rep_sigma_pct": 11.8,
+      "key_info_kept": 0.69,
+      "actionable": 0.665,
+      "factual_errors": 0.2,
+      "safety_ok_pct": 90,
+      "reduction_vs_baseline_pct": 74.2,
+      "net_weighted_per_turn": 4785,
+      "quality_adjusted_net": 3302
+    },
+    "4_tokendiet": {
+      "fixed_cost": 2115,
+      "mean_output": 475.8,
+      "rep_means": [
+        435.6,
+        526.3,
+        465.6
+      ],
+      "rep_sigma_pct": 9.7,
+      "key_info_kept": 0.66,
+      "actionable": 0.735,
+      "factual_errors": 0.7,
+      "safety_ok_pct": 100,
+      "reduction_vs_baseline_pct": 64.0,
+      "net_weighted_per_turn": 4017,
+      "quality_adjusted_net": 2651
+    },
+    "5_lesstoken": {
+      "fixed_cost": 805,
+      "mean_output": 251.8,
+      "rep_means": [
+        258.3,
+        251.7,
+        245.3
+      ],
+      "rep_sigma_pct": 2.6,
+      "key_info_kept": 0.57,
+      "actionable": 0.655,
+      "factual_errors": 0.5,
+      "safety_ok_pct": 100,
+      "reduction_vs_baseline_pct": 80.9,
+      "net_weighted_per_turn": 5268,
+      "quality_adjusted_net": 3002
+    }
+  }
+}

@@ -11,7 +11,9 @@ ACTIVE EVERY RESPONSE once triggered. No revert after many turns. No filler drif
 
 ## English Rules
 
-Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Abbreviate common terms (DB/auth/config/req/res/fn/impl). Strip conjunctions. Use arrows for causality (X -> Y). One word when one word enough.
+Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging. Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for"). Strip conjunctions. Use arrows for causality (X -> Y). One word when one word enough.
+
+Never invent abbreviations (cfg/impl/req/res/fn). BPE encodes `config` and `cfg` as one token each — the abbreviation saves nothing and costs the reader a decode. Write the full word.
 
 Technical terms stay exact. Code blocks unchanged. Errors quoted exact.
 
@@ -32,7 +34,9 @@ Yes: "Bug in auth middleware. Token expiry check use `<` not `<=`. Fix:"
 
 ## 中文规则
 
-砍掉：语气词(的/了/呢/吧/啊)、口头禅(其实/就是/基本上/实际上/然后)、客套(好的/当然/没问题/可以)、模糊词(可能/大概/也许)。碎片句 OK。短词替换长词。常用缩写保留(DB/配置/函数/实现)。用箭头表因果(X -> Y)。一个词够就不用两个。
+砍掉：语气词(的/了/呢/吧/啊)、口头禅(其实/就是/基本上/实际上/然后)、客套(好的/当然/没问题/可以)、模糊词(可能/大概/也许)。碎片句 OK。短词替换长词。用箭头表因果(X -> Y)。一个词够就不用两个。
+
+不要造缩写。BPE 把 `config` 和 `cfg` 各编成 1 个 token，缩写零节省，只让读者多解一道码。写全词。
 
 技术术语原样保留。代码块不动。报错原文引用。
 

@@ -10,7 +10,13 @@ Five arms. Each arm's system prompt is the **real, unmodified `SKILL.md` body** 
 | `2_be_brief` | `Be brief.` | 3 |
 | `3_caveman` | `JuliusBrussee/caveman` → `skills/caveman/SKILL.md`, frontmatter stripped | 1,182 |
 | `4_tokendiet` | `Kulaxyz/token-diet` → `SKILL.md` + `activation.md` | 2,115 |
-| `5_lesstoken` | this repo's `SKILL.md`, frontmatter stripped | 805 |
+| `5_lesstoken` | this repo's `SKILL.md` **at v0.1**, frontmatter stripped | 805 |
+
+**Version note.** The benchmark ran against `lesstoken` **v0.1** (805 tokens). After the run, v0.2 removed the abbreviation rule — measured to save zero tokens — and replaced it with the opposite instruction. That change made the skill 868 tokens. **The numbers below have not been re-run against v0.2.** The change affects wording, not compression aggressiveness, but it has not been re-measured and should not be assumed identical.
+
+**Comparison targets, star counts as of 2026-07-10 03:04 UTC (GitHub API):**
+`caveman` 87,329 ★ (created 2026-04-04) · `token-diet` 555 ★ (created 2026-07-03).
+`caveman` is the only widely adopted project in this category; the runner-up, `laconic`, has 17 stars and is a caveman derivative. `token-diet` is a recent entrant and is included for the quality of its own published data, not for its adoption.
 
 Ten prompts spanning LaTeX build diagnosis, circuit-simulation debugging, concept explanation, a Python exception, a refactor plan, a git operation, a one-line factual question, a tooling trade-off, a **destructive shell command**, and a Chinese-language technical question.
 

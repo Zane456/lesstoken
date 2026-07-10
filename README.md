@@ -1,29 +1,37 @@
 # lesstoken
 
-> Bilingual (中文 / English) output-compression skill for coding agents.
-> Benchmarked against the popular alternatives. Honest about what it cannot do.
+**Two languages, one skill. Shortest replies of anything benchmarked — and honest about the ceiling.**
 
-Most output-compression skills are English-first and treat other languages as an afterthought. `lesstoken` ships **two independent rule sets** — one for English, one for Chinese — each with its own examples, and switches on the language you actually wrote in.
+[English](README.md) · [简体中文](README.zh-CN.md)
 
-It also refuses to lie to you about savings. Read [Honest Numbers](#honest-numbers) before you install.
-
----
-
-## The one-paragraph version
-
-On a real agent workload with extended thinking enabled, **visible text is only 4.7% of billed output tokens**. The rest is thinking tokens and tool-call arguments, which no output-compression skill can touch. Output is roughly 19% of weighted spend. Multiply it out and the **global ceiling for this entire category is under 1% of your total bill**.
-
-Within that 1%, `lesstoken` produces the **shortest output of anything we tested** (−80.9% vs. an unconstrained baseline) at the **lowest fixed cost of any real skill** (805 tokens/turn, vs. caveman's 1,182). It also **retains the least information** (0.570, the worst score in the field).
-
-All three statements are true at once. Install it for **readability and speed**. Not for your bill.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Skill](https://img.shields.io/badge/Claude%20Code-skill-orange)](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview)
+[![Benchmarked](https://img.shields.io/badge/benchmark-3%20repeats%20%2B%2050%20blind%20judgments-green)](benchmarks/METHODOLOGY.md)
 
 ---
 
-## Why bilingual matters
+## Highlights
 
-`caveman` and `token-diet` are written in English and rely on a single instruction like *"preserve the user's dominant language"* to cover everything else. That works, sort of. What it does not give you is a rule set tuned to the target language's actual filler.
+- **Answers you can read at a glance.** Replies come back at roughly one fifth of their normal length, with every technical fact, code block, and error string untouched.
+- **Chinese and English are both first-class.** Two separate rule sets, two sets of examples. Not one English rule set with a note saying "keep the user's language."
+- **It backs off when it matters.** Delete a table, force-push a branch, run a destructive shell command, and the terse mode switches itself off until the warning is delivered. It scored 100% on safety in blind evaluation. The most popular alternative scored 90%.
+- **It tells you when it loses.** The ceiling for this entire category is under 1% of your bill. That number is in this README, in a chart, with the arithmetic shown.
 
-Chinese filler is not English filler. Dropping articles (`a`/`an`/`the`) is meaningless in Chinese. What you want to drop instead is 语气词 (的/了/呢/吧/啊), 口头禅 (其实/就是/基本上/实际上), 客套 (好的/当然/没问题), and 模糊词 (可能/大概/也许). `lesstoken` says so explicitly, in Chinese, with Chinese examples.
+---
+
+## Introduction
+
+`lesstoken` is a single `SKILL.md` file. It instructs a coding agent to answer in compressed prose: no filler, no pleasantries, no hedging, fragments where fragments suffice. Technical terms, code, commands, and error messages pass through byte for byte.
+
+What makes it different from the alternatives is that it carries **an independent Chinese rule set**. English filler and Chinese filler are not the same thing. Dropping articles is meaningless in Chinese; what you want to drop is 语气词, 口头禅, 客套 and 模糊词. `lesstoken` says that explicitly, in Chinese, with Chinese examples. The others rely on a single instruction to preserve the user's language and hope for the best.
+
+It also carries an **Auto-Clarity Exception**. Compression suspends itself for security warnings, irreversible operations, and multi-step sequences where a misread fragment could cause damage. This is the one place where fewer tokens is the wrong answer.
+
+And it will not oversell itself. Read [Honest Numbers](#honest-numbers) before you install. The short version: on a modern agent with extended thinking enabled, **visible text is only 4.7% of what you are billed for output**. No skill in this category can save you more than about 0.74% of total spend. Install `lesstoken` because you want to read less, not because you want to pay less.
+
+---
+
+## Showcase
 
 **English**
 
@@ -35,135 +43,107 @@ Chinese filler is not English filler. Dropping articles (`a`/`an`/`the`) is mean
 > **问：** 为什么 React 组件一直在重新渲染？
 > **答：** 内联对象 prop -> 新引用 -> 重渲染。用 `useMemo`。
 
-The skill detects the language you wrote in and applies the matching rules. No flag, no mode switch.
+**And when it should not compress:**
 
----
+> **Q:** Can I just `DROP TABLE users` in prod?
+> **A:**
+> **Warning:** This will permanently delete all rows in the `users` table and cannot be undone.
+> ```sql
+> DROP TABLE users;
+> ```
+> Lesstoken resume. Verify backup exist first.
 
-## Install
-
-Claude Code:
-
-```bash
-mkdir -p ~/.claude/skills/lesstoken
-curl -sL https://raw.githubusercontent.com/Zane456/lesstoken/main/SKILL.md \
-  -o ~/.claude/skills/lesstoken/SKILL.md
-```
-
-Trigger it by saying `lesstoken`, `be brief`, `省token`, `极简模式`, or `少废话`. Turn it off with `stop lesstoken` / `正常模式`.
-
-It is a plain `SKILL.md` with YAML frontmatter, so any agent that reads that format should work. **Only Claude Code has been tested.**
-
----
-
-## What it does
-
-Drops filler, pleasantries, and hedging. Keeps fragments. Prefers short synonyms. One word when one word is enough.
-
-Never touches technical terms, code blocks, or error strings — those are reproduced verbatim.
-
-Response shape: `[thing] [action] [reason]. [next step].`
-
-> ❌ "Sure! I'd be happy to help you with that. The issue you're experiencing is likely caused by..."
-> ✅ "Bug in auth middleware. Token expiry check use `<` not `<=`. Fix:"
-
-### Auto-Clarity Exception
-
-Compression switches **off** automatically for security warnings, irreversible operations, and multi-step sequences where fragment order could be misread. Then it resumes.
-
-This is not decoration. In our blind evaluation, `lesstoken` scored **100% on safety**, meaning every dangerous or irreversible operation got an explicit warning. **`caveman` scored 90%** — it dropped the warning once.
+Full sentences for the warning. Fragments again the moment the danger has passed.
 
 ---
 
 ## Benchmarks
 
-### Method
+Five arms. Each arm's system prompt is the **real, unmodified `SKILL.md`** of that project, fetched live from its own repository. Same 10 prompts, same model, 3 repeats. Then 50 blind judgments scoring each answer against the unconstrained baseline.
 
-Five arms. Each arm's system prompt is the **real, unmodified `SKILL.md`** of that project, fetched from its own repository. Same 10 prompts, same model, **3 repeats** (150 calls). Output measured with `tiktoken` `cl100k_base`.
+### Who is actually being compared
 
-Then a separate **blind judge** pass: 50 evaluations, arms anonymized, each compressed answer scored against the unconstrained baseline answer.
+| Project | Stars | Created | Notes |
+|---|---|---|---|
+| [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | **87,329** ★ | 2026-04-04 | The only heavyweight in this category |
+| [Kulaxyz/token-diet](https://github.com/Kulaxyz/token-diet) | 555 ★ | 2026-07-03 | A newer entrant, included because it publishes per-scenario bill data |
+| `"Be brief."` | — | — | A control, not a project. Borrowed from [max-t-dev's HN benchmark](https://news.ycombinator.com/item?id=47954745) |
 
-Net value accounts for the fact that a skill is not free — its system prompt is re-read as `cache_read` on **every single turn**:
+*Star counts snapshot: **2026-07-10 03:04 UTC**, GitHub API.*
 
-```
-net_weighted_per_turn = (baseline_output − arm_output) × 5 − fixed_cost × 0.1
-```
+Two things worth saying plainly. **`caveman` is not merely popular, it is the category.** The next output-compression skill down the list, [`laconic`](https://github.com/GabrielBarberini/laconic), has 17 stars, and it is a caveman derivative. **`token-diet` is not famous** — 555 stars, one week old at the time of this benchmark. It earns its place here by being unusually honest with its own numbers, not by adoption.
 
-(Anthropic pricing weights: output 5×, cache_read 0.1×, relative to input 1×.)
+### The trade-off
 
-### Fixed cost — what the skill charges you every turn
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/tradeoff-dark.png">
+  <img alt="Output length versus information retained. lesstoken is shortest and retains least." src="assets/tradeoff-light.png">
+</picture>
 
-| Arm | System prompt tokens |
-|---|---|
-| `"Be brief."` | **3** |
-| **lesstoken** | **805** |
-| caveman | 1,182 |
-| token-diet | 2,115 |
+`lesstoken` produces the shortest output of any arm tested, and retains the least information. Both are consequences of the same aggressiveness. The bubble area is what each skill charges you every single turn just by existing in your system prompt.
 
-caveman's own docs claim it "costs ~1–1.5k input tokens every turn." We measured **1,182**. The claim is accurate.
+### Output length and cost
 
-### Results (3 repeats, mean)
+| Arm | Fixed cost/turn | Mean output | σ across repeats | vs. baseline |
+|---|---|---|---|---|
+| baseline (no instruction) | 0 | 1,321 | 0.2% | — |
+| **lesstoken** | 805 | **252** | **2.6%** | **−80.9%** |
+| caveman | 1,182 | 341 | 11.8% | −74.2% |
+| `"Be brief."` | **3** | 434 | 2.1% | −67.1% |
+| token-diet | 2,115 | 476 | 9.7% | −64.0% |
 
-| Arm | Fixed | Mean output | σ across repeats | vs. baseline | **Net weighted/turn** |
-|---|---|---|---|---|---|
-| baseline (no instruction) | 0 | 1,321 | 0.2% | — | — |
-| **lesstoken** | 805 | **252** | **2.6%** | **−80.9%** | **5,268** |
-| caveman | 1,182 | 341 | 11.8% | −74.2% | 4,785 |
-| `"Be brief."` | 3 | 434 | 2.1% | −67.1% | 4,436 |
-| token-diet | 2,115 | 476 | 9.7% | −64.0% | 4,017 |
+caveman's own documentation states the skill "costs ~1–1.5k input tokens every turn." We measured **1,182**. The claim is accurate.
 
-`lesstoken` is the shortest and the most consistent (σ 2.6%).
+### Quality, and what it does to the ranking
 
-### Blind judge — the part that hurts
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/net-dark.png">
+  <img alt="Net weighted tokens saved per turn, before and after weighting for information retained." src="assets/net-light.png">
+</picture>
 
-| Arm | Info retained | Actionable | Factual errors/answer | Safety | **Quality-adjusted net** |
-|---|---|---|---|---|---|
-| caveman | 0.690 | 0.665 | 0.20 | **90%** | **3,302** |
-| **lesstoken** | **0.570** | 0.655 | 0.50 | 100% | 3,003 |
-| `"Be brief."` | 0.665 | 0.700 | 0.30 | 100% | 2,950 |
-| token-diet | 0.660 | 0.735 | **0.70** | 100% | 2,651 |
+| Arm | Info retained | Actionable | Factual errors/answer | Safety pass |
+|---|---|---|---|---|
+| caveman | **0.690** | 0.665 | **0.20** | **90%** |
+| **lesstoken** | 0.570 | 0.655 | 0.50 | **100%** |
+| `"Be brief."` | 0.665 | **0.700** | 0.30 | 100% |
+| token-diet | 0.660 | 0.735 | 0.70 | 100% |
 
-Quality-adjusted net = net × info-retained.
+**`lesstoken` leads on raw tokens and loses once quality is priced in.** We are not going to hide that by omitting the column.
 
-**`lesstoken` wins on raw tokens and loses on information retention.** Once you weight for how much of the answer survives compression, caveman comes out ahead. We are not going to hide that by omitting the column.
+The judge named concrete failures: `lesstoken` dropped a root-cause chain in a LaTeX debugging question, forced a spurious numerical coincidence in a simulation question, and missed several causes in a JSON parsing question.
 
-The judge flagged concrete failures in `lesstoken`'s answers: it dropped a root-cause chain in a LaTeX debugging question, forced a spurious numerical coincidence in a simulation question, and missed several causes (BOM, encoding) in a JSON parsing question.
-
-Note that the σ between repeats runs 8–12% for caveman and token-diet. **The ~300-point quality-adjusted gap between caveman and lesstoken is not statistically significant** at this sample size. Do not read it as a ranking.
+One caveat that cuts in our favour and we will state anyway: between-repeat σ runs 8–12% for caveman and token-diet. **The ~300-point quality-adjusted gap between caveman and lesstoken sits inside the noise.** It is not a ranking. Treat those two as tied.
 
 ---
 
 ## Honest Numbers
 
-Named after, and inspired by, [caveman's `HONEST-NUMBERS.md`](https://github.com/JuliusBrussee/caveman/blob/main/docs/HONEST-NUMBERS.md). If a skill's own docs will not tell you when it loses, do not install it.
+Named after, and inspired by, [caveman's `HONEST-NUMBERS.md`](https://github.com/JuliusBrussee/caveman/blob/main/docs/HONEST-NUMBERS.md). A skill whose own docs will not tell you when it loses is a skill you should not install.
 
-### 1. The ceiling for this whole category is under 1%
+### The ceiling for this whole category is under 1%
 
-Measured on one real user's 1,994 local agent sessions (26.9 billion tokens):
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/ceiling-dark.png">
+  <img alt="Why every output-compression skill has a sub-1% ceiling." src="assets/ceiling-light.png">
+</picture>
 
-| Category | Share of all tokens |
-|---|---|
-| `cache_read` | 94.67% |
-| `cache_write` | 4.07% |
-| **`output`** | **0.71%** |
-| `input` (uncached) | 0.55% |
+Measured across one user's 1,994 local agent sessions, 26.9 billion tokens. Isolating assistant messages that contain **only text** — no tool calls, no thinking blocks (n = 9,070) — the API billed 9,180,549 output tokens for 1,742,539 tokens of visible text. **A ratio of 5.27.** The missing 4.27× is thinking tokens that never appear in the transcript.
 
-Isolating assistant messages that contain **only text** — no tool calls, no thinking blocks (n = 9,070): the API billed 9,180,549 output tokens for 1,742,539 tokens of visible text. **A ratio of 5.27.** The other 4.27× is thinking tokens that never appear in the transcript.
-
-So visible text — the only thing this skill can compress — is **4.7% of billed output**. Weighted by price, output is ~19% of total spend. Best case:
+Visible text, the only surface this skill can touch, is **4.7% of billed output**. Output is ~19% of weighted spend. Best case:
 
 ```
-4.7% × 83% (best measured compression) × 19% ≈ 0.74%
+4.7%  ×  83% (best measured compression)  ×  19%  =  0.74%
 ```
 
-**Under one percent.** If someone tells you an output-compression skill cut their bill by 50%, ask what fraction of their output was thinking tokens.
+If someone tells you an output-compression skill cut their bill by half, ask what fraction of their output was thinking tokens.
 
-### 2. It compresses hardest, so it drops the most
+### It compresses hardest, so it drops the most
 
-`key_info_kept = 0.570`, the lowest of every arm tested. This is the direct cost of being the most aggressive. If you are debugging something subtle, turn it off.
+`key_info_kept = 0.570`, the lowest of every arm tested. That is the direct cost of being the most aggressive. Debugging something subtle, turn it off.
 
-### 3. Two of its rules save nothing
+### One of its own rules saved nothing, and has been removed
 
-`SKILL.md` currently instructs the model to abbreviate common terms (`DB`/`auth`/`config`/`req`/`res`/`fn`/`impl`) and to use arrows for causality. **Both save zero tokens.** BPE encodes common words as single tokens:
+Through v0.1 this skill told the model to abbreviate common terms. **That rule saved zero tokens.** BPE encodes common words as single tokens:
 
 | Abbreviation | tokens | Full word | tokens |
 |---|---|---|---|
@@ -176,39 +156,91 @@ So visible text — the only thing this skill can compress — is **4.7% of bill
 `Update cfg, restart fn, check req/res in DB.` = **12 tokens**
 `Update config, restart function, check request/response in database.` = **12 tokens**
 
-Identical under both `cl100k_base` and `o200k_base`. Same for `→` (1 token) versus ` therefore` (1 token).
-
-caveman's `SKILL.md` says exactly this, and **caveman is right**:
+Identical under both `cl100k_base` and `o200k_base`. caveman's `SKILL.md` says exactly this, and **caveman is right**:
 
 > "never invent new abbreviations (cfg/impl/req/res/fn) — tokenizer split them same as full word: zero token saved, reader still decode. Full word cheaper AND clearer."
 
-**The abbreviation rule is scheduled for removal.** Arrows will stay as a readability preference, with no claim of token savings.
+**v0.2 removes the rule and replaces it with the opposite instruction.** This made the skill 63 tokens heavier (805 → 868) and made its output easier to read at identical cost. The benchmark numbers in this README were produced with **v0.1 at 805 tokens**; they have not been re-run.
 
-### 4. When not to use it
+Causal arrows (`X -> Y`) are also **not** a token saving — `→` and ` therefore` are one token each. Arrows stay, as a readability preference, with no claim attached.
 
-- **Your replies are already short.** caveman's docs put it bluntly: *"the skill costs ~1–1.5k input tokens every turn. If it saves less output than that, you are paying to use it."* At 805 tokens `lesstoken` has more headroom than caveman, but the arithmetic is the same.
+### When not to use it
+
+- **Your replies are already short.** caveman's docs put it bluntly: *"the skill costs ~1–1.5k input tokens every turn. If it saves less output than that, you are paying to use it."* At 868 tokens `lesstoken` has more headroom, but the arithmetic is identical.
 - **You are billed per request, not per token.**
-- **The task is subtle debugging.** Info retention is 0.570.
-- **You want maximum information density.** Use `"Be brief."` — three tokens, 0.665 retention, and per an [independent Hacker News benchmark](https://news.ycombinator.com/item?id=47954745) it matches caveman on both tokens and quality.
+- **You are debugging something subtle.** 0.570.
+- **You want the best ratio of benefit to complexity.** Use `"Be brief."`. Three tokens. 0.665 retention. Per the [HN benchmark](https://news.ycombinator.com/item?id=47954745) it ties caveman on both tokens and quality.
 
 ---
 
-## How it compares
+## Comparison
 
 | | lesstoken | caveman | token-diet | `"Be brief."` |
 |---|---|---|---|---|
-| Fixed cost/turn | 805 | 1,182 | 2,115 | 3 |
+| Stars | — | 87,329 ★ | 555 ★ | — |
+| Fixed cost/turn | 868 (v0.2) | 1,182 | 2,115 | **3** |
 | Output reduction | **−80.9%** | −74.2% | −64.0% | −67.1% |
 | Info retained | 0.570 | **0.690** | 0.660 | 0.665 |
 | Factual errors | 0.50 | **0.20** | 0.70 | 0.30 |
 | Safety pass | **100%** | 90% | 100% | 100% |
 | Consistency (σ) | **2.6%** | 11.8% | 9.7% | 2.1% |
-| Independent CN rule set | **yes** | no | no | no |
+| Independent Chinese rule set | **yes** | no | no | no |
 | Auto-exit on dangerous ops | **yes** | partial | no | no |
 
-Pick `lesstoken` if you write in Chinese and English and you want the shortest possible replies with an explicit safety carve-out. Pick `caveman` if information retention matters more than length. Pick `"Be brief."` if you want 90% of the benefit for 3 tokens.
+Pick `lesstoken` if you work in Chinese and English and want the shortest replies with an explicit safety carve-out. Pick `caveman` if information retention matters more than length. Pick `"Be brief."` if you want most of the benefit for three tokens.
 
-**Not comparable, different layer:** [`rtk`](https://github.com/rtk-ai/rtk) compresses shell output, [`context-mode`](https://github.com/mksglu/context-mode) compresses MCP results, [`headroom`](https://github.com/headroomlabs-ai/headroom) proxies the API. Those attack `cache_read`, which is 94.67% of the tokens. **They have far more headroom than anything in this README.** If you are here to save money rather than to read less, start there.
+### A different layer entirely
+
+These attack `cache_read`, which is **94.67%** of all tokens — not output, which is 0.71%:
+
+| Project | Stars | What it compresses |
+|---|---|---|
+| [rtk-ai/rtk](https://github.com/rtk-ai/rtk) | 69,875 ★ | Shell command output, before it enters context |
+| [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom) | 58,199 ★ | Everything, via an API proxy |
+| [mksglu/context-mode](https://github.com/mksglu/context-mode) | 18,771 ★ | MCP tool results |
+
+**They have far more headroom than anything in this README.** If your goal is to spend less rather than to read less, start there. One warning on the proxy approach: Anthropic's prompt cache keys on an exact prefix match, and anything that rewrites conversation history invalidates it — converting `cache_read` at 0.1× into `cache_write` at 1.25×. Measure your bill, not your token count.
+
+---
+
+## Structure
+
+```
+lesstoken/
+├── SKILL.md                              the skill itself; this is the whole product
+├── README.md                             this file
+├── README.zh-CN.md                       Chinese translation, same information
+├── LICENSE                               MIT
+├── assets/
+│   ├── tradeoff-light.png                output length vs. information retained (light theme)
+│   ├── tradeoff-dark.png                 same, dark theme
+│   ├── net-light.png                     net tokens saved, before and after quality weighting
+│   ├── net-dark.png                      same, dark theme
+│   ├── ceiling-light.png                 why the category ceiling is under 1%
+│   └── ceiling-dark.png                  same, dark theme
+└── benchmarks/
+    ├── METHODOLOGY.md                    how the numbers were produced, and six limitations
+    ├── run_benchmark.py                  fetches competitors' real SKILL.md, runs all arms
+    ├── analyze.py                        regenerates every table in this README
+    └── data/
+        ├── results.json                  full aggregate statistics, per arm, per repeat
+        ├── arm_costs.json                measured fixed cost of each arm's system prompt
+        └── redacted_prompts.json         replacements for three withheld prompts
+```
+
+---
+
+## Install
+
+```bash
+mkdir -p ~/.claude/skills/lesstoken
+curl -sL https://raw.githubusercontent.com/Zane456/lesstoken/main/SKILL.md \
+  -o ~/.claude/skills/lesstoken/SKILL.md
+```
+
+Trigger with `lesstoken`, `be brief`, `省token`, `极简模式`, or `少废话`. Stop with `stop lesstoken` or `正常模式`.
+
+It is a plain `SKILL.md` with YAML frontmatter, so any agent reading that format should work. **Only Claude Code has been tested.**
 
 ---
 
@@ -216,13 +248,14 @@ Pick `lesstoken` if you write in Chinese and English and you want the shortest p
 
 ```bash
 pip install tiktoken
-python benchmarks/run_benchmark.py    # fetches competitors' real SKILL.md, runs all arms
-python benchmarks/analyze.py          # regenerates the tables above
+export LLM_API_KEY=...
+python benchmarks/run_benchmark.py --model <your-model> --repeats 3
+python benchmarks/analyze.py raw_output.json
 ```
 
-Aggregate results: [`benchmarks/data/results.json`](benchmarks/data/results.json). Method and caveats: [`benchmarks/METHODOLOGY.md`](benchmarks/METHODOLOGY.md).
+`run_benchmark.py` fetches the competitors' real `SKILL.md` files at run time, so the comparison stays honest as they evolve.
 
-**Raw model outputs are not published.** Three of the ten original prompts contained the author's unpublished research details. `benchmarks/data/redacted_prompts.json` holds semantically equivalent replacements. The numbers reported above come from the original run; a rerun with the redacted prompts will not reproduce them exactly.
+**Raw model outputs are not published.** Three of the ten original prompts contained the author's unpublished research details; `benchmarks/data/redacted_prompts.json` holds semantically equivalent replacements. The numbers above come from the original run. A rerun will land close, not identical. Full detail and all six limitations of this benchmark are in [`benchmarks/METHODOLOGY.md`](benchmarks/METHODOLOGY.md) — including the two that matter most, that the generating model was not Claude and that `cl100k_base` is not Claude's tokenizer.
 
 ---
 

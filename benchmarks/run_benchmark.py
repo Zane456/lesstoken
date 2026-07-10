@@ -23,6 +23,8 @@ SOURCES = {
         "https://raw.githubusercontent.com/Kulaxyz/token-diet/main/SKILL.md",
         "https://raw.githubusercontent.com/Kulaxyz/token-diet/main/activation.md",
     ],
+    "6_tokeneff_min": "https://raw.githubusercontent.com/drona23/claude-token-efficient/main/CLAUDE.md",
+    "7_tokeneff_comp": "https://raw.githubusercontent.com/drona23/claude-token-efficient/main/profiles/CLAUDE.compressed.md",
 }
 
 PROMPTS = {

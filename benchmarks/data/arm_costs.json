@@ -3,5 +3,7 @@
   "2_be_brief": 3,
   "3_caveman": 1182,
   "4_tokendiet": 2115,
-  "5_lesstoken": 805
+  "5_lesstoken": 805,
+  "6_tokeneff_min": 85,
+  "7_tokeneff_comp": 220
 }
